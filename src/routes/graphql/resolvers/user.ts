@@ -6,7 +6,7 @@ import { PostEntity } from "../../../utils/DB/entities/DBPosts";
 import { MemberTypeEntity } from "../../../utils/DB/entities/DBMemberTypes";
 import { ProfileEntity } from "../../../utils/DB/entities/DBProfiles";
 import { generateDataLoader } from "../DataLoader";
-import DataLoader = require("dataloader");
+import * as DataLoader from "dataloader";
 
 const UserInputType = new GraphQLInputObjectType({
     name: 'UserInput',
@@ -33,11 +33,11 @@ const UserDetails: any = new GraphQLObjectType({
                 let dl = dataloader.get(info.fieldNodes);
                 
                 if (!dl) {
-                    dl = generateDataLoader({ table: 'posts', filterKey: 'userId'}, context);
+                    dl = generateDataLoader({ table: 'posts', filterKey: 'userId', multiple: true }, context);
                     dataloader.set(info.fieldNodes, dl);
                 }
 
-                const posts: PostEntity = dl.load(user.id)
+                const posts: Array<PostEntity> = await dl.load(user.id)
 
                 return posts 
             }
@@ -57,44 +57,71 @@ const UserDetails: any = new GraphQLObjectType({
                                 return mt.id === (profiles.find((p: ProfileEntity) => p.userId == id))?.memberTypeId
                             } )
                         });
-                        console.log("sortedData__: ", sortedData);
-                        
+
                         return sortedData;
                     });
                     dataloader.set(info.fieldNodes, dl);
                 }
 
-                const memberType: MemberTypeEntity = dl.load(user.id);
+                const memberType: MemberTypeEntity = await dl.load(user.id);
                 return memberType;
-
-                // const profile: ProfileEntity = context.fastify.db.profiles.findOne({ key: 'userId', equals: user.id });
-                // if (!profile) return {}
-                // const memberTypeId: string = profile.memberTypeId;
-                // const memberType: MemberTypeEntity = fastify.db.memberTypes.findOne({ key: 'id', equals: memberTypeId });
-                // return memberType;
             }
         },
         profile: {
             type: Profile,
-            resolve: async (user: UserEntity, args: any, context: any, meta: any) => {
-                const profile: ProfileEntity = context.fastify.db.profiles.findOne({ key: 'userId', equals: user.id });
-                return profile || {};
+            resolve: async (user: UserEntity, args: any, context: any, info: any) => {
+
+                const { dataloader } = context;
+
+                let dl = dataloader.get(info.fieldNodes);
+                
+                if (!dl) {
+                    dl = generateDataLoader({ table: 'profiles', filterKey: 'userId', multiple: false }, context);
+                    dataloader.set(info.fieldNodes, dl);
+                }
+
+                const profile: ProfileEntity = await dl.load(user.id)
+
+                return profile || null;
             }
         },
         userSubscribedTo: {
             type: new GraphQLList(UserDetails),
-            resolve: async (parent: UserEntity, args: any, context: any, meta: any) => {
-                const users = await context.fastify.db.users.findMany();
-                console.log(users, parent.subscribedToUserIds );
+            resolve: async (parent: UserEntity, args: any, context: any, info: any) => {
+
+                const { dataloader } = context;
+
+                let dl = dataloader.get(info.fieldNodes);
                 
-                return users.filter((user: UserEntity)  => parent.subscribedToUserIds.includes(user.id));
+                if (!dl) {
+                    dl = new DataLoader(async (filters: any) => {
+                        const rows = await context.fastify.db.users.findMany()
+                        return filters.map((f: any) => rows.filter((usr: UserEntity) => usr.subscribedToUserIds.includes(f)));
+                    });
+                    dataloader.set(info.fieldNodes, dl);
+                }
+                
+                const users: Array<UserEntity> = await dl.load(parent.id);
+                
+                return users;
             }
         },
         subscribedToUser: {
             type: new GraphQLList(UserDetails),
-            resolve: async (parent: UserEntity, args: any, context: any, meta: any) => {
-                const users = await context.fastify.db.users.findMany();
-                return users.filter((user: UserEntity)  => user.subscribedToUserIds.includes(parent.id));
+            resolve: async (parent: UserEntity, args: any, context: any, info: any) => {
+                const { dataloader } = context;
+
+                let dl = dataloader.get(info.fieldNodes);
+                
+                if (!dl) {
+                    dl = generateDataLoader({ table: 'users', filterKey: 'id', multiple: false }, context);
+                    dataloader.set(info.fieldNodes, dl);
+                }
+                console.log("Parent: ", parent);
+                
+                const users: Array<UserEntity> = await dl.loadMany(parent.subscribedToUserIds);
+                
+                return users;
             }
         }
 
@@ -185,9 +212,9 @@ const subscribeQuery = {
             return user
         }
 
-        user.subscribedToUserIds.push(args.subscriptionId);
+        subscriptionUser.subscribedToUserIds.push(user.id);
         
-        await context.fastify.db.users.change(args.userId, user);
+        await context.fastify.db.users.change(subscriptionUser.id, subscriptionUser);
 
         return user
     }
