@@ -2,13 +2,17 @@ import { FastifyPluginAsyncJsonSchemaToTs } from '@fastify/type-provider-json-sc
 import { idParamSchema } from '../../utils/reusedSchemas';
 import { createProfileBodySchema, changeProfileBodySchema } from './schema';
 import type { ProfileEntity } from '../../utils/DB/entities/DBProfiles';
+import { UserEntity } from '../../utils/DB/entities/DBUsers';
+import { MemberTypeEntity } from '../../utils/DB/entities/DBMemberTypes';
 
 const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
-  fastify
+  fastify: any
 ): Promise<void> => {
-  fastify.get('/', async function (request, reply): Promise<
+  fastify.get('/', async function (request: any, reply: any): Promise<
     ProfileEntity[]
-  > {});
+  > {
+    return fastify.db.profiles.findMany();
+  });
 
   fastify.get(
     '/:id',
@@ -17,7 +21,15 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         params: idParamSchema,
       },
     },
-    async function (request, reply): Promise<ProfileEntity> {}
+    async function (request: any, reply: any): Promise<ProfileEntity> {
+      const profile: ProfileEntity = await fastify.db.profiles.findOne({ key: 'id', equals: request.params.id });
+
+      if (!profile) {
+        throw fastify.httpErrors.notFound('Profile not found!');
+      }
+
+      return profile;
+    }
   );
 
   fastify.post(
@@ -27,7 +39,18 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         body: createProfileBodySchema,
       },
     },
-    async function (request, reply): Promise<ProfileEntity> {}
+    async function (request: any, reply: any): Promise<ProfileEntity> {
+      const user: UserEntity = await fastify.db.users.findOne({ key: 'id', equals: request.body.userId })
+      const memberType: MemberTypeEntity = await fastify.db.memberTypes.findOne({ key: 'id', equals: request.body.memberTypeId })
+      const profileExist = await fastify.db.profiles.findOne({ key: 'userId', equals: request.body.userId }) 
+
+      if (!user || !memberType || profileExist) {
+        throw fastify.httpErrors.badRequest('Datas are incorrect!')
+      }
+
+      const profile: ProfileEntity = await fastify.db.profiles.create(request.body);
+      return profile;
+    }
   );
 
   fastify.delete(
@@ -37,7 +60,17 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         params: idParamSchema,
       },
     },
-    async function (request, reply): Promise<ProfileEntity> {}
+    async function (request: any, reply: any): Promise<ProfileEntity> {
+      const profile: ProfileEntity = await fastify.db.profiles.findOne({ key: 'id', equals: request.params.id });
+
+      if (!profile) {
+        throw fastify.httpErrors.badRequest('Profile not found!');
+      }
+
+      await fastify.db.profiles.delete(request.params.id);
+
+      return profile;
+    }
   );
 
   fastify.patch(
@@ -48,7 +81,17 @@ const plugin: FastifyPluginAsyncJsonSchemaToTs = async (
         params: idParamSchema,
       },
     },
-    async function (request, reply): Promise<ProfileEntity> {}
+    async function (request: any, reply: any): Promise<ProfileEntity> {
+      const profile: ProfileEntity = await fastify.db.profiles.findOne({ key: 'id', equals: request.params.id });
+
+      if (!profile) {
+        throw fastify.httpErrors.badRequest('Profile not found!');
+      }
+
+      const profileUpdated: ProfileEntity = await fastify.db.profiles.change(request.params.id, request.body);
+
+      return profileUpdated;
+    }
   );
 };
 
