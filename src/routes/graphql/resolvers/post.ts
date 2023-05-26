@@ -1,8 +1,17 @@
 import { GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql";
-import { Post } from "../EntityTypes";
 import { UserEntity } from "../../../utils/DB/entities/DBUsers";
 import { PostEntity } from "../../../utils/DB/entities/DBPosts";
 
+
+const Post = new GraphQLObjectType({
+    name: 'Post',
+    fields: () => ({
+        id: { type: GraphQLID },
+        title: { type: GraphQLString },
+        content: { type: GraphQLString },
+        userId: { type: GraphQLString }
+    })
+});
 
 const PostInputData = new GraphQLInputObjectType({
     name: 'PostInputData',

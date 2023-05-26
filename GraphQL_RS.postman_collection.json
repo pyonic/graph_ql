@@ -342,6 +342,32 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Emaple of max deepness",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query {\n    users { id, firstName },\n    posts { id, title, content },\n    memberTypes { id, discount, monthPostsLimit },\n    profiles { id, userId, country, avatar, memberTypeId }\n}\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/graphql",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

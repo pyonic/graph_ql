@@ -1,8 +1,23 @@
-import { GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString } from "graphql"
-import { Profile } from "../EntityTypes"
+import { GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from "graphql"
 import { UserEntity } from "../../../utils/DB/entities/DBUsers"
 import { MemberTypeEntity } from "../../../utils/DB/entities/DBMemberTypes"
 import { ProfileEntity } from "../../../utils/DB/entities/DBProfiles"
+
+const Profile = new GraphQLObjectType({
+    name: 'Profile',
+    fields: () => ({
+        id: { type: GraphQLID },
+        avatar: { type: GraphQLString },
+        sex: { type: GraphQLString },
+        birthday: { type: GraphQLString },
+        country: { type: GraphQLString },
+        street: { type: GraphQLString },
+        city: { type: GraphQLString },
+        memberTypeId: { type: GraphQLString },
+        userId: { type: GraphQLString },
+    })
+});
+
 
 const ProfileInputObject = new GraphQLInputObjectType({
     name: 'ProfileDto',
@@ -100,5 +115,6 @@ export {
     ProfileInputObject,
     getProfileQuery,
     getProfilesQuery,
-    updateProfile
+    updateProfile,
+    Profile
 }

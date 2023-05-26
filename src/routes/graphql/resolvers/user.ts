@@ -1,12 +1,14 @@
+import * as DataLoader from "dataloader";
 import { GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLResolveInfo, GraphQLString } from "graphql";
-import { MemberType, Profile, User } from "../EntityTypes";
+
 import { UserEntity } from "../../../utils/DB/entities/DBUsers";
 import { PostType } from "./post";
 import { PostEntity } from "../../../utils/DB/entities/DBPosts";
 import { MemberTypeEntity } from "../../../utils/DB/entities/DBMemberTypes";
 import { ProfileEntity } from "../../../utils/DB/entities/DBProfiles";
 import { generateDataLoader } from "../DataLoader";
-import * as DataLoader from "dataloader";
+import { MemberTypeGQL } from "./memberTypes";
+import { Profile } from "./profile";
 
 const UserInputType = new GraphQLInputObjectType({
     name: 'UserInput',
@@ -43,7 +45,7 @@ const UserDetails: any = new GraphQLObjectType({
             }
         },
         memberType: { 
-            type: MemberType,
+            type: MemberTypeGQL,
             resolve: async (user: UserEntity, args: any, context: any, info: any) => {
                 const { dataloader, fastify } = context;
                 let dl = dataloader.get(info.fieldNodes);
@@ -130,7 +132,7 @@ const UserDetails: any = new GraphQLObjectType({
 
 
 const createUserMutation = {
-    type: User,
+    type: UserDetails,
     args: {
         data: { type: UserInputType }
     },
@@ -149,7 +151,7 @@ const createUserMutation = {
 }
 
 const updateUserMutation = {
-        type: User,
+        type: UserDetails,
         args: {
             id: { type: new GraphQLNonNull(GraphQLID) },
             data: { type: UserInputType }
@@ -228,14 +230,15 @@ const unsubscribeQuery = {
     },
     resolve: async (parent: any, args: any, context: any, meta: any) => {
         const user: UserEntity = await context.fastify.db.users.findOne({ key: 'id', equals: args.userId });
+        const subscriptionUser: UserEntity = await context.fastify.db.users.findOne({ key: 'id', equals: args.subscriptionId });
 
         if (!user) {
             throw context.fastify.httpErrors.badRequest("User not found");
         }
 
-        user.subscribedToUserIds = user.subscribedToUserIds.filter(uid => uid != args.subscriptionId)
+        subscriptionUser.subscribedToUserIds = subscriptionUser.subscribedToUserIds.filter(uid => uid != args.userId)
         
-        await context.fastify.db.users.change(args.userId, user);
+        await context.fastify.db.users.change(subscriptionUser.id, subscriptionUser);
 
         return user
     }
