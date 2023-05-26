@@ -13,7 +13,7 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "query {\n    users { id, firstName },\n    posts { id, title, content },\n    memberTypes { id, discount, monthPostsLimit },\n    profiles { id, userId, country, avatar, memberTypeId }\n}\n",
+						"query": "query {\n    users { id, firstName, profile { id }},\n    posts { id, title, content },\n    memberTypes { id, discount, monthPostsLimit },\n    profiles { id, userId, country, avatar, memberTypeId }\n}\n",
 						"variables": ""
 					}
 				},
@@ -39,8 +39,8 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "query(\n    $userId: ID,\n    $postId: ID,\n    $memberTypeId: String,\n    $profileId: ID\n) {\n    user(id: $userId) { id, email },\n    post(id: $postId) { id, title, content },\n    memberType(id: $memberTypeId) { id, discount, monthPostsLimit },\n    profile(id: $profileId) { id, country, avatar }\n}\n",
-						"variables": "{\n    \"userId\":  \"2c2878a3-3f67-4f22-8481-9ab592247779\",\n    \"postId\": \"2c2878a3-3f67-4f22-8481-9ab592247779\",\n    \"memberTypeId\": \"basic\",\n    \"profileId\": \"99566cea-e95e-46a3-93a1-5f7fc8f13292\"\n}"
+						"query": "query(\n    $userId: ID,\n    $postId: ID,\n    $memberTypeId: String,\n    $profileId: ID\n) {\n    user(id: $userId) { id, email, posts { id, title } },\n    post(id: $postId) { id, title, content },\n    memberType(id: $memberTypeId) { id, discount, monthPostsLimit },\n    profile(id: $profileId) { id, country, avatar }\n}\n",
+						"variables": "{\n    \"userId\":  \"75bbb9b9-8838-4af1-bad7-561f2d3965f7\",\n    \"postId\": \"9bea107a-8c3d-43de-b50e-a167f1b28bd7\",\n    \"memberTypeId\": \"basic\",\n    \"profileId\": \"ea777ddb-234d-4721-837e-735c0f6e65d5\"\n}"
 					}
 				},
 				"url": {
@@ -65,7 +65,7 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "query {\n    users{\n        id,\n        email,\n        firstName,\n        subscribedToUserIds,\n        posts { id, title, content },\n        profile { id, country },\n        memberType { id, discount },\n        userSubscribedTo { id, userSubscribedTo{id, subscribedToUser{id, subscribedToUser{id} }}, subscribedToUser{id} },\n        subscribedToUser { id }\n    }\n}\n",
+						"query": "query {\n    users{\n        id,\n        email,\n        firstName,\n        subscribedToUserIds,\n        posts { id, title, content },\n        profile { id, country },\n        memberType { id, discount },\n        userSubscribedTo { id, firstName },\n        subscribedToUser { id, firstName }\n    }\n}\n",
 						"variables": ""
 					}
 				},
@@ -117,7 +117,7 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "# Create user\nmutation {\n    createUser(data: {\n        firstName: \"John\",\n        lastName: \"Doe\",\n        email: \"johndoe1@example.com\"\n    }) {\n        firstName\n        lastName\n        email,\n        id\n    }\n}",
+						"query": "# Create user\nmutation {\n    createUser(data: {\n        firstName: \"Tom\",\n        lastName: \"Ford\",\n        email: \"hford2@example.com\"\n    }) {\n        firstName\n        lastName\n        email,\n        id\n    }\n}",
 						"variables": ""
 					}
 				},
@@ -143,8 +143,8 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "mutation($userId: ID) {\n    createProfile(\n        data: {\n                avatar: \"no_logo\",\n                sex: \"male\",\n                birthday: \"01.01.2001\",\n                country: \"Austria\",\n                street: \"Street 1\",\n                city:\"Wise\",\n                memberTypeId: \"basic\",\n                userId: $userId,\n        }\n    ) {\n        sex\n    }\n}",
-						"variables": "{\n    \"userId\":  \"d5237af5-d370-4337-a23c-5dc13c2176ed\"\n}"
+						"query": "mutation($userId: ID) {\n    createProfile(\n        data: {\n                avatar: \"no_logo\",\n                sex: \"male\",\n                birthday: \"01.01.2001\",\n                country: \"Austria\",\n                street: \"Street 1\",\n                city:\"Wise\",\n                memberTypeId: \"basic\",\n                userId: $userId,\n        }\n    ) {\n        country\n    }\n}",
+						"variables": "{\n    \"userId\":  \"d4ea9467-e1f7-4616-bd7f-772276e32b83\"\n}"
 					}
 				},
 				"url": {
@@ -169,8 +169,8 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "mutation($id: ID!) {\n    updateProfile(\n        id: $id,\n        data: {\n            avatar: \"https://example.com/avatar.png\",\n            sex: \"female\",\n            birthday: \"1990-01-01\",\n            country: \"United States\",\n            street: \"123 Example Street\",\n            city: \"New York\",\n            memberTypeId: \"basic\"\n        }\n    ) {\n        avatar\n    }\n}",
-						"variables": "{\n    \"id\": \"d2b6e156-44d6-4776-ac70-fd54e78c8f76\"\n}"
+						"query": "mutation($id: ID!) {\n    updateProfile(\n        id: $id,\n        data: {\n            avatar: \"https://example.com/avatar.png\",\n            sex: \"female\",\n            birthday: \"1990-01-01\",\n            country: \"United States\",\n            street: \"123 Example Street\",\n            city: \"New York\",\n            memberTypeId: \"business\"\n        }\n    ) {\n        avatar\n    }\n}",
+						"variables": "{\n    \"id\": \"ea777ddb-234d-4721-837e-735c0f6e65d5\"\n}"
 					}
 				},
 				"url": {
@@ -195,8 +195,8 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "# Create post\nmutation($userId: String) {\n    createPost(data: {\n        title: \"MyPost\",\n        content: \"Contentt\",\n        userId: $userId\n    }) {\n        title\n    }\n}",
-						"variables": "{\n    \"userId\":  \"d5237af5-d370-4337-a23c-5dc13c2176ed\"\n}"
+						"query": "# Create post\nmutation($userId: String) {\n    createPost(data: {\n        title: \"MyPost\",\n        content: \"Contentt\",\n        userId: $userId\n    }) {\n        id,\n        title\n    }\n}",
+						"variables": "{\n    \"userId\":  \"75bbb9b9-8838-4af1-bad7-561f2d3965f7\"\n}"
 					}
 				},
 				"url": {
@@ -221,8 +221,8 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "mutation($id: ID!) {\n    updateUser(\n        id: $id,\n        data: {\n            email: \"someOther@mail.ru\"\n        }\n    ) {\n        email,\n        id\n    }\n}",
-						"variables": "{\n    \"id\": \"b091be25-3cfe-412b-83e0-991c52918168\"\n}"
+						"query": "mutation($id: ID!) {\n    updateUser(\n        id: $id,\n        data: {\n            firstName: \"Tom\"\n        }\n    ) {\n        email,\n        id\n    }\n}",
+						"variables": "{\n    \"id\": \"aa41ebf4-0922-4637-9d27-2ba16541ef72\"\n}"
 					}
 				},
 				"url": {
@@ -248,7 +248,7 @@
 					"mode": "graphql",
 					"graphql": {
 						"query": "mutation($id: ID!) {\n    updatePost(\n        id: $id,\n        data: {\n            title: \"New title for post\",\n            content: \"Updated post content\"\n        }\n    ) {\n        title\n    }\n}",
-						"variables": "{\n    \"id\": \"54827e2b-5bdc-4626-9b62-b1c63dfc85f1\"\n}"
+						"variables": "{\n    \"id\": \"30369e20-ffc1-4881-b99a-7bd2ba3e8a5e\"\n}"
 					}
 				},
 				"url": {
@@ -300,7 +300,7 @@
 					"mode": "graphql",
 					"graphql": {
 						"query": "mutation(\n    $subscriptionId: ID!,\n    $userId: ID!\n) {\n    subscribe(subscriptionId: $subscriptionId, userId: $userId) {\n        id,\n        email,\n        firstName,\n        posts { id, title, content },\n        profile { id, country },\n        memberType { id, discount },\n        userSubscribedTo { id }\n    }\n}",
-						"variables": "{\n    \"subscriptionId\": \"97f8b991-1f96-41d9-92e7-3e8e806fe399\",\n    \"userId\": \"4e42e4d1-eb93-43ee-8241-6450b4dc002b\"\n}"
+						"variables": "{\n    \"subscriptionId\": \"27daa4c8-0490-4472-ae4e-ea948c2f4241\",\n    \"userId\": \"1f703fd7-43c4-4c9c-9b83-25de19f10b22\"\n}"
 					}
 				},
 				"url": {
@@ -325,8 +325,8 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "mutation(\n    $subscriptionId: ID!,\n    $userId: ID!\n) {\n    subscribe(subscriptionId: $subscriptionId, userId: $userId) {\n        id,\n        email,\n        firstName,\n        posts { id, title, content },\n        profile { id, country },\n        memberType { id, discount },\n        userSubscribedTo { id }\n    }\n}",
-						"variables": "{\n    \"subscriptionId\": \"97f8b991-1f96-41d9-92e7-3e8e806fe399\",\n    \"userId\": \"4e42e4d1-eb93-43ee-8241-6450b4dc002b\"\n}"
+						"query": "mutation(\n    $subscriptionId: ID!,\n    $userId: ID!\n) {\n    unsubscribe(subscriptionId: $subscriptionId, userId: $userId) {\n        id,\n        email,\n        firstName,\n        posts { id, title, content },\n        profile { id, country },\n        memberType { id, discount },\n        userSubscribedTo { id }\n    }\n}",
+						"variables": "{\n    \"subscriptionId\": \"27daa4c8-0490-4472-ae4e-ea948c2f4241\",\n    \"userId\": \"1f703fd7-43c4-4c9c-9b83-25de19f10b22\"\n}"
 					}
 				},
 				"url": {
@@ -351,7 +351,7 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "query {\n    users { id, firstName },\n    posts { id, title, content },\n    memberTypes { id, discount, monthPostsLimit },\n    profiles { id, userId, country, avatar, memberTypeId }\n}\n",
+						"query": "query {\n    users { \n        id,\n        firstName,\n        userSubscribedTo { \n            firstName,\n            userSubscribedTo { \n                id,\n                userSubscribedTo { \n                    id,\n                    userSubscribedTo { \n                        id,\n                        userSubscribedTo { \n                            id\n                        }\n                    }\n                }\n            }\n        }\n    }\n}\n",
 						"variables": ""
 					}
 				},
